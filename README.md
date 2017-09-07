@@ -1,7 +1,11 @@
 # CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
-Daniel Prado Rodriguez - February Cohort
+## Self-Driving Car Engineer Nanodegree Program
+### Daniel Prado Rodriguez - February Cohort'2017
 ---
+
+[//]: # (Image References)
+
+[image1]: ./graphs.png "graphics"
 
 ## Reflections
 
@@ -24,6 +28,11 @@ The integral part `Ki` compensates for any constant bias the controlled object m
 ## How I adjusted the PID values
 The project rubric gives freedom on the technique used to tune the PID parameters. I chose to do it manually, at least in a first instance, because I wanted to truly understand how the controller works, and how tunning up and down the parameters affect the controller. To manually tune a PID is quite an 'art' as there is not a systematic approach that will give the optimal solution in every case, which makes the case more interesting. Finally, a first rough manual tunning of the parameters can be used to later fine-tune them using an automated algorithm.
 Note that in this implementation I kept the throttle input fixed to 30mph.
+
+>**Important!** : the performance of the simulator can affect how the controller is tuned and hence, how it behaves when it is run in a different setup with a different frame rate.
+>**I used default parameters: 800x600 pix and Medium Quality.**
+>Machine: MacBook Pro with intel i5 2.6GHz
+
 So, this is the approach I followed based on recommendations on the course forums:
 1. First, I set the Kp, Ki and Kd values to zero, disabling them.
 2. Then I slightly increase the Kp component and run the simulator for 500 iterations. I make subjective observation, and objective measurements of the total error and average error every 100 iterations. Example:
@@ -37,6 +46,7 @@ ACCUMULATED ERROR AFTER 500 SAMPLES: 218.324
 ```
 As an example, I also show the results graphically, for Kp values between 0.1 and 1.0 in 0.1 increases:
 
+![graphics][image1]
 
 3. I continue increasing Kp as long as the total error over 500 samples continues decreasing, also observing that there are not 'peak' errors along the 100 samples checkpoints. Visually, this is until the car starts to overshoot.
 4. I then keep Kp fixed, and increase Kd until the overshoot is minimized. Here I need more data so I track the controller over 2000 samples. I chose a Kp value that gives a total error minimum (at least a local minimum)
