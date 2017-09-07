@@ -1,6 +1,9 @@
 #ifndef PID_H
 #define PID_H
 
+#define LENGTH_AVERAGE_SAMPLES 100
+#define LENGTH_TOTAL_ERR_SAMPLES 3000
+
 class PID {
 public:
   /*
@@ -16,6 +19,16 @@ public:
   double Kp;
   double Ki;
   double Kd;
+
+
+  /*
+  * Iterations total count and error variables
+  * accum_error is the same as the i_error, but I prefered to keep a separate variable
+  * for monitoring purposes that could be reset, separate from the PID system internal variables.
+  */ 
+  long iter;
+  double accum_error;
+  double average_error;
 
   /*
   * Constructor
@@ -38,9 +51,12 @@ public:
   void UpdateError(double cte);
 
   /*
-  * Calculate the total PID error.
+  * Calculate the manipulated input variable (steer) of the PID system.
+  * Note that this method is equivalent to the given TotalError in the project,
+  * but I found that naming misleading, because the total error (CTE) is given by the
+  * simulator.
   */
-  double TotalError();
+  double GetSteerInput();
 };
 
 #endif /* PID_H */
