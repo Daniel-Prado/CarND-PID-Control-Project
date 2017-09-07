@@ -1,5 +1,81 @@
 # CarND-Controls-PID
 Self-Driving Car Engineer Nanodegree Program
+Daniel Prado Rodriguez - February Cohort
+---
+
+## Reflections
+
+PID Controller is one of the most common control loop mechanism. A PID controller calculates an error value (cross-track error in this project) every iteration, as a difference between the desired target value and a measured one, and applies a correction input based on the (P)roportional, (I)ntegral and (D)erivative terms which give name to the controller.
+
+In this project the cross track error is given by the Car Simulator, as the difference between the position of the car respective to the middle of the road, which is the desired target value. And the input correction is the steering value that the PID applies every iteration to follow the desired path.
+
+The full formula of any PID controller, and as it is implemented in `src/pid.cpp` is as follows:
+```
+steer(cte): -Kp * cte - Kd * (cte - previous_cte) - Ki * total_cte;
+```
+where `Kp`, `Kd` and `Ki` are the proportional, derivative and integral components of the controller.
+
+The proportional part `Kp` is responsible for the sensitivity of the controllers' response, and is directly proportional to the instantanious cross track error. The higher it is, the strongest (and fastest) it will react to the error. That implies that if we make this component very high (very sensitive) the controller will quickly start to oscilate and eventually overshoot out of control.
+
+The derivative part `Kd` helps the PID controller to manage the overshoot caused by the `Kp`. It is applied to the difference between the current CTE and the previous one, so, if the error is decreasing, it will 'soften' the response, preventing the controller from oscilating.
+
+The integral part `Ki` compensates for any constant bias the controlled object might have by adjusting the output to a sum of all cte's observed in the lifecycle of the controller (integral value).
+
+## How I adjusted the PID values
+The project rubric gives freedom on the technique used to tune the PID parameters. I chose to do it manually, at least in a first instance, because I wanted to truly understand how the controller works, and how tunning up and down the parameters affect the controller. To manually tune a PID is quite an 'art' as there is not a systematic approach that will give the optimal solution in every case, which makes the case more interesting. Finally, a first rough manual tunning of the parameters can be used to later fine-tune them using an automated algorithm.
+Note that in this implementation I kept the throttle input fixed to 30mph.
+So, this is the approach I followed based on recommendations on the course forums:
+1. First, I set the Kp, Ki and Kd values to zero, disabling them.
+2. Then I slightly increase the Kp component and run the simulator for 500 iterations. I make subjective observation, and objective measurements of the total error and average error every 100 iterations. Example:
+```
+LEG 1: AVERAGE ERROR OVER LAST 100 SAMPLES:0.725165
+LEG 2: AVERAGE ERROR OVER LAST 100 SAMPLES:0.433132
+LEG 3: AVERAGE ERROR OVER LAST 100 SAMPLES:0.206566
+LEG 4: AVERAGE ERROR OVER LAST 100 SAMPLES:0.354679
+LEG 5: AVERAGE ERROR OVER LAST 100 SAMPLES:0.449749
+ACCUMULATED ERROR AFTER 500 SAMPLES: 218.324
+```
+As an example, I also show the results graphically, for Kp values between 0.1 and 1.0 in 0.1 increases:
+
+
+3. I continue increasing Kp as long as the total error over 500 samples continues decreasing, also observing that there are not 'peak' errors along the 100 samples checkpoints. Visually, this is until the car starts to overshoot.
+4. I then keep Kp fixed, and increase Kd until the overshoot is minimized. Here I need more data so I track the controller over 2000 samples. I chose a Kp value that gives a total error minimum (at least a local minimum)
+```
+LEG 1: AVERAGE ERROR OVER LAST 100 SAMPLES:0.586025
+LEG 2: AVERAGE ERROR OVER LAST 100 SAMPLES:0.05502
+LEG 3: AVERAGE ERROR OVER LAST 100 SAMPLES:0.064508
+LEG 4: AVERAGE ERROR OVER LAST 100 SAMPLES:0.068676
+LEG 5: AVERAGE ERROR OVER LAST 100 SAMPLES:0.070526
+LEG 6: AVERAGE ERROR OVER LAST 100 SAMPLES:0.083608
+LEG 7: AVERAGE ERROR OVER LAST 100 SAMPLES:0.155983
+LEG 8: AVERAGE ERROR OVER LAST 100 SAMPLES:0.151906
+LEG 9: AVERAGE ERROR OVER LAST 100 SAMPLES:0.244531
+LEG 10: AVERAGE ERROR OVER LAST 100 SAMPLES:0.194848
+LEG 11: AVERAGE ERROR OVER LAST 100 SAMPLES:0.092065
+LEG 12: AVERAGE ERROR OVER LAST 100 SAMPLES:0.086022
+LEG 13: AVERAGE ERROR OVER LAST 100 SAMPLES:0.108518
+LEG 14: AVERAGE ERROR OVER LAST 100 SAMPLES:0.065502
+LEG 15: AVERAGE ERROR OVER LAST 100 SAMPLES:0.344392
+LEG 16: AVERAGE ERROR OVER LAST 100 SAMPLES:0.282896
+LEG 17: AVERAGE ERROR OVER LAST 100 SAMPLES:0.344072
+LEG 18: AVERAGE ERROR OVER LAST 100 SAMPLES:0.093622
+LEG 19: AVERAGE ERROR OVER LAST 100 SAMPLES:0.102751
+LEG 20: AVERAGE ERROR OVER LAST 100 SAMPLES:0.468733
+ACCUMULATED ERROR AFTER 2000 SAMPLES: 370.42
+```
+5. With Kp and Kd fixed, I finally test slight adjustments to the integral component Ki. The Ki is very sensitive so the values need to be very small. On the other hand there would be no reason to believe there is a 'bias' in the simulator... but the fact that the circuit is driven counter-clock wise with all the turns being to the left, may induce it. Again, I apply the same numerical technique to evaluate the result, and this time I ensure the car drives the full circuit (over 3000 iterations aprox.)
+
+Following this manual pseudo-algorithm I found to work best the following values:
+* Kp: 5.25
+* Ki: 0.0035
+* Kd: 7.0
+
+Below you can see a video of the simulator with the controller tuned with these parameters:
+
+[![Project 4 Output](https://img.youtube.com/vi/tvfMtfEe4fk/0.jpg)](https://youtu.be/tvfMtfEe4fk)
+
+
+
 
 ---
 
